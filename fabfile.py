@@ -42,11 +42,10 @@ def reduce_data():
     put('reduce_data.py', project_path('reduce_data.py'))
 
     with cd(project_path('.')):
-        run('python reduce_data.py')
+        run('python reduce_data.py --offers data/offers.csv --output data/reduced_transactions.csv data/transactions.csv.gz')
 
-
-
-
+def send_scripts():
+    put('reduce_data.py', project_path('reduce_data.py'))
 
 def deploy():
     setup_env()

@@ -30,6 +30,8 @@ def download_data():
             save_as = url.split('/')[-1]
             run('wget -x --trust-server-names --load-cookies ../kaggle-cookie.txt "%s" -O %s' % (url, save_as))
 
+    run('rm %s', project_path('kaggle-cookie.txt'))
+
 def extract_data():
     unzip_files = ['offers.csv.gz', 'sampleSubmission.csv.gz',
                    'testHistory.csv.gz', 'trainHistory.csv.gz']

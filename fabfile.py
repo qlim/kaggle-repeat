@@ -7,10 +7,16 @@ PROJECT_DIR = '/home/ec2-user/kaggle-repeat'
 def project_path(path):
     return os.path.join(PROJECT_DIR, path)
 
+def copy_file(name):
+    put(name, project_path(name))
+
 env.use_ssh_config = True
 
 def setup_env():
     run('mkdir -p %s' % PROJECT_DIR)
+
+def install_packages():
+    run('sudo yum install -y postgresql-server postgresql python-psycopg2')
 
 def download_data():
     urls = [
@@ -21,7 +27,7 @@ def download_data():
         'https://www.kaggle.com/c/acquire-valued-shoppers-challenge/download/transactions.csv.gz'
     ]
 
-    put('kaggle-cookie.txt', project_path('kaggle-cookie.txt')) 
+    copy_file('kaggle-cookie.txt')
 
     run('mkdir -p %s' % project_path('data'))
 
@@ -41,18 +47,46 @@ def extract_data():
             run('gunzip %s' % fn)
 
 def reduce_data():
-    put('reduce_data.py', project_path('reduce_data.py'))
+    copy_file('reduce_data.py')
 
     with cd(project_path('.')):
         run('python reduce_data.py --offers data/offers.csv --output data/reduced_transactions.csv data/transactions.csv.gz')
 
 def send_scripts():
-    put('reduce_data.py', project_path('reduce_data.py'))
+    copy_file('reduce_data.py')
+    copy_file('create_tables.sql')
+
+def setup_db():
+    run('sudo service postgresql initdb')
+    run('sudo /etc/init.d/postgresql start')
+    run('sudo -u postgres createuser ec2-user')
+    run('sudo -u postgres createdb kaggle -O ec2-user')
+
+def reset_db():
+    run('sudo -u postgres psql -d kaggle -c "drop schema public cascade;'
+        'create schema public; grant all on schema public to \\\\"ec2-user\\\\""')
+
+def create_tables():
+    copy_file('create_tables.sql')
+    run('psql -d kaggle -f %s' % project_path('create_tables.sql'))
+    load_data('offers', project_path('data/offers.csv'))
+    load_data('transactions',
+              project_path('data/reduced_transactions-9115_108500080.csv'))
+    load_data('offer_performance',
+              project_path('data/trainHistory.csv'))
+
+
+def load_data(table, fname):
+    run('''sudo -u postgres psql -d kaggle -c "COPY %s FROM '%s' CSV HEADER"''' %
+        (table, fname))
 
 def deploy():
     setup_env()
+    install_packages()
     download_data()
     extract_data()
+    setup_db()
+    create_tables()
 
     print "Complete"
 

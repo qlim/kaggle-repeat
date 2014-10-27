@@ -10,13 +10,16 @@ def project_path(path):
 def copy_file(name):
     put(name, project_path(name))
 
+def psql(fname):
+    run('psql -d kaggle -f %s' % project_path(fname))
+
 env.use_ssh_config = True
 
 def setup_env():
     run('mkdir -p %s' % PROJECT_DIR)
 
 def install_packages():
-    run('sudo yum install -y postgresql-server postgresql python-psycopg2')
+    run('sudo yum install -y postgresql93-server postgresql93 python-psycopg2')
 
 def download_data():
     urls = [
@@ -57,8 +60,8 @@ def send_scripts():
     copy_file('create_tables.sql')
 
 def setup_db():
-    run('sudo service postgresql initdb')
-    run('sudo /etc/init.d/postgresql start')
+    run('sudo service postgresql93 initdb')
+    run('sudo /etc/init.d/postgresql93 start')
     run('sudo -u postgres createuser ec2-user')
     run('sudo -u postgres createdb kaggle -O ec2-user')
 
@@ -68,13 +71,16 @@ def reset_db():
 
 def create_tables():
     copy_file('create_tables.sql')
-    run('psql -d kaggle -f %s' % project_path('create_tables.sql'))
+    psql('create_tables.sql')
     load_data('offers', project_path('data/offers.csv'))
     load_data('transactions',
-              project_path('data/reduced_transactions-9115_108500080.csv'))
+              project_path('data/reduced_transactions.csv'))
     load_data('offer_performance',
               project_path('data/trainHistory.csv'))
 
+def create_views():
+    copy_file('create_views.sql')
+    psql('create_views.sql')
 
 def load_data(table, fname):
     run('''sudo -u postgres psql -d kaggle -c "COPY %s FROM '%s' CSV HEADER"''' %

@@ -1,16 +1,17 @@
 DROP MATERIALIZED VIEW IF EXISTS offer_info;
 DROP VIEW IF EXISTS offer_perf_summary;
 DROP VIEW IF EXISTS brand_category;
-DROP VIEW IF EXISTS category_summ;
+DROP MATERIALIZED VIEW IF EXISTS category_summ;
 
-CREATE VIEW category_summ AS
-    SELECT category_id
+CREATE MATERIALIZED VIEW category_summ AS
+    SELECT dept_id
+        ,category_id
         ,SUM(amount) AS amount
         ,COUNT(amount) AS transactions
         ,COUNT(DISTINCT customer_id) AS customers
 
     FROM transactions
-    GROUP BY category_id
+    GROUP BY dept_id, category_id
 ;
 
 

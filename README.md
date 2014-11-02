@@ -1,18 +1,5 @@
 Code for the Kaggle repeat-customer acquisition challenge
 
-# Feature building
-
-The feature building process is optimized to run on a multi-core server with
-sufficient memory to hold the entire database (~60GB)
-
-First, create indexes that will be useful for frequently-made joins
-
-The fab script will execute in parallel code to create materialized views
-that calculate features.
-
-A final script runs the query that joins these views together to output the final data.
-
-
 # Features
 
 For each training instance (an offer given to a customer) we will calculate the following features:

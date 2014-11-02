@@ -44,6 +44,8 @@ build_object f_ocbt_vis180 sql/02-f_ocbt_vis.sql &
 wait
 
 build_object f_oct_brands180 sql/02-f_oct_brands.sql &
+build_object f_ot_vis_uniq180 sql/02-f_ot_vis_uniq.sql &
+build_object f_ot_cat_uniq180 sql/02-f_ot_cat_uniq.sql &
 
 wait
 

@@ -14,32 +14,44 @@ CREATE MATERIALIZED VIEW features AS
         ,f_ot_agg180.amount AS amt_purchases_last180
         ,f_ot_agg180.quantity AS qty_purchases_last180
         ,f_ot_vis180.visits AS num_visits_last180
+        ,f_ot_agg180.amount / NULLIF(f_ot_vis180.visits,0) AS avg_spend_per_visit_last180
+        ,f_ot_agg180.amount / NULLIF(f_ot_agg180.quantity,0) AS avg_price_last180
+        ,f_ot_vis_uniq180.unique_chains AS num_chains_visited_last180
+        ,f_ot_cat_uniq180.unique_categories AS num_categories_shopped_last180
 
         ,f_ot_agg60.amount AS amt_purchases_last60
         ,f_ot_agg60.quantity AS qty_purchases_last60
         ,f_ot_vis60.visits AS num_visits_last60
+        ,f_ot_agg60.amount / NULLIF(f_ot_vis60.visits,0) AS avg_spend_per_visit_last60
+        ,f_ot_agg60.amount / NULLIF(f_ot_agg60.quantity,0) AS avg_price_last60
+        ,f_ot_vis_uniq60.unique_chains AS num_chains_visited_last60
+        ,f_ot_cat_uniq60.unique_categories AS num_categories_shopped_last60
 
         ,f_ot_agg30.amount AS amt_purchases_last30
         ,f_ot_agg30.quantity AS qty_purchases_last30
         ,f_ot_vis30.visits AS num_visits_last30
+        ,f_ot_agg30.amount / NULLIF(f_ot_vis30.visits,0) AS avg_spend_per_visit_last30
+        ,f_ot_agg30.amount / NULLIF(f_ot_agg30.quantity,0) AS avg_price_last30
+        ,f_ot_vis_uniq30.unique_chains AS num_chains_visited_last30
+        ,f_ot_cat_uniq30.unique_categories AS num_categories_shopped_last30
 
         ,f_oct_agg180.quantity AS qty_category_purchases_last180
         ,f_oct_agg180.amount AS amt_category_purchases_last180
         ,f_oct_agg180.amount / NULLIF(f_ot_agg180.amount,0) AS pct_category_of_total_wallet_last180
         ,f_oct_vis180.visits AS num_category_visits_last180
-        ,f_oct_vis180.visits / NULLIF(f_ot_vis180.visits,0) AS pct_category_visits_of_total_last180
+        ,f_oct_vis180.visits / NULLIF(f_ot_vis180.visits,0)::float AS pct_category_visits_of_total_last180
 
         ,f_oct_agg60.quantity AS qty_category_purchases_last60
         ,f_oct_agg60.amount AS amt_category_purchases_last60
         ,f_oct_agg60.amount / NULLIF(f_ot_agg60.amount,0) AS pct_category_of_total_wallet_last60
         ,f_oct_vis60.visits AS num_category_visits_last60
-        ,f_oct_vis60.visits / NULLIF(f_ot_vis60.visits,0) AS pct_category_visits_of_total_last60
+        ,f_oct_vis60.visits / NULLIF(f_ot_vis60.visits,0)::float AS pct_category_visits_of_total_last60
 
         ,f_oct_agg30.quantity AS qty_category_purchases_last30
         ,f_oct_agg30.amount AS amt_category_purchases_last30
         ,f_oct_agg30.amount / NULLIF(f_ot_agg30.amount,0) AS pct_category_of_total_wallet_last30
         ,f_oct_vis30.visits AS num_category_visits_last30
-        ,f_oct_vis30.visits / NULLIF(f_ot_vis30.visits,0) AS pct_category_visits_of_total_last30
+        ,f_oct_vis30.visits / NULLIF(f_ot_vis30.visits,0)::float AS pct_category_visits_of_total_last30
 
         ,f_ocbt_agg180.quantity AS qty_category_brand_purchases_last180
         ,f_ocbt_agg180.amount AS amt_category_brand_purchases_last180
@@ -120,15 +132,33 @@ CREATE MATERIALIZED VIEW features AS
     LEFT JOIN f_ocbt_vis30 ON 
         f_ocbt_vis30.customer_id = s.customer_id 
         AND f_ocbt_vis30.offer_id = s.offer_id
-    LEFT JOIN f_oct_brands_180 ON 
-        f_oct_brands_180.customer_id = s.customer_id 
-        AND f_oct_brands_180.offer_id = s.offer_id
-    LEFT JOIN f_oct_brands_60 ON 
-        f_oct_brands_60.customer_id = s.customer_id 
-        AND f_oct_brands_60.offer_id = s.offer_id
-    LEFT JOIN f_oct_brands_30 ON 
-        f_oct_brands_30.customer_id = s.customer_id 
-        AND f_oct_brands_30.offer_id = s.offer_id
+    LEFT JOIN f_oct_brands180 ON 
+        f_oct_brands180.customer_id = s.customer_id 
+        AND f_oct_brands180.offer_id = s.offer_id
+    LEFT JOIN f_oct_brands60 ON 
+        f_oct_brands60.customer_id = s.customer_id 
+        AND f_oct_brands60.offer_id = s.offer_id
+    LEFT JOIN f_oct_brands30 ON 
+        f_oct_brands30.customer_id = s.customer_id 
+        AND f_oct_brands30.offer_id = s.offer_id
+    LEFT JOIN f_ot_vis_uniq180 ON 
+        f_ot_vis_uniq180.customer_id = s.customer_id 
+        AND f_ot_vis_uniq180.offer_id = s.offer_id
+    LEFT JOIN f_ot_vis_uniq60 ON 
+        f_ot_vis_uniq60.customer_id = s.customer_id 
+        AND f_ot_vis_uniq60.offer_id = s.offer_id
+    LEFT JOIN f_ot_vis_uniq30 ON 
+        f_ot_vis_uniq30.customer_id = s.customer_id 
+        AND f_ot_vis_uniq30.offer_id = s.offer_id
+    LEFT JOIN f_ot_cat_uniq180 ON 
+        f_ot_cat_uniq180.customer_id = s.customer_id 
+        AND f_ot_cat_uniq180.offer_id = s.offer_id
+    LEFT JOIN f_ot_cat_uniq60 ON 
+        f_ot_cat_uniq60.customer_id = s.customer_id 
+        AND f_ot_cat_uniq60.offer_id = s.offer_id
+    LEFT JOIN f_ot_cat_uniq30 ON 
+        f_ot_cat_uniq30.customer_id = s.customer_id 
+        AND f_ot_cat_uniq30.offer_id = s.offer_id
     ORDER BY s.offer_date ASC
 ;
 

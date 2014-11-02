@@ -7,11 +7,12 @@ CREATE VIEW offer_transactions AS
     SELECT op.customer_id as customer_id
         ,op.offer_id as offer_id
         ,op.offer_date as offer_date
-        ,o.category_id as category_id
+        ,o.category_id as offer_category_id
         ,t.quantity as quantity
         ,t.amount as amount
         ,t.occurred as occurred
         ,t.chain_id as chain_id
+        ,t.category_id as category_id
     FROM offer_performance op
     LEFT JOIN offers o ON o.offer_id = op.offer_id
     LEFT JOIN transactions t ON t.customer_id = op.customer_id
@@ -19,7 +20,7 @@ CREATE VIEW offer_transactions AS
 ;
 
 
-CREATE OR REPLACE VIEW offer_category_transactions AS
+CREATE VIEW offer_category_transactions AS
     SELECT op.customer_id as customer_id
         ,op.offer_id as offer_id
         ,op.offer_date as offer_date

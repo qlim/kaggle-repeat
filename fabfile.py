@@ -86,12 +86,8 @@ def create_tables(tx_data='data/reduced_transactions.csv', cleanup=False):
         run('rm %s' % project_path(tx_data))
 
 def create_views():
-    copy_file('create_views.sql')
-    psql('create_views.sql')
-
-def create_features():
-    copy_file('create_features.sql')
-    psql('create_features.sql')
+    copy_file('sql/00-create_views.sql')
+    psql('sql/00-create_views.sql')
 
 def build_database():
     run('mkdir -p %s'% project_path('sql'))
@@ -113,7 +109,13 @@ def save_data(table, fname):
         (table, fname))
 
 def drop_mv(view):
-    run('''psql -d kaggle -c "DROP MATERIALIZED VIEW %s"''' % view)
+    run('''psql -d kaggle -c "DROP MATERIALIZED VIEW IF EXISTS %s CASCADE"''' % view)
+
+def drop_v(view):
+    run('''psql -d kaggle -c "DROP VIEW IF EXISTS %s CASCADE"''' % view)
+
+def start_db():
+    run('''sudo /etc/init.d/postgresql93 start''')
 
 def deploy():
     setup_env()

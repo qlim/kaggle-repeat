@@ -34,6 +34,8 @@ For each training instance (an offer given to a customer) we will calculate the 
         * `pct_category_brand_total_wallet_lastX` Share of customer wallet in this category that this brand holds
         * Number of other brands customer has purchased from in this category
         * (Could do similar for company instead of brand)
+    * Customer's past history with this brand in other categories
+    * Customer's history with this department
     * Propensity to develop loyalty
         * Avg unique products purchased per category
     * Offer timing

@@ -4,7 +4,7 @@ import datetime
 
 PROJECT_DIR = '/home/ec2-user/kaggle-repeat'
 
-def project_path(path):
+def project_path(path=''):
     return os.path.join(PROJECT_DIR, path)
 
 def copy_file(name):
@@ -76,11 +76,11 @@ def reset_db():
 def create_tables(tx_data='data/reduced_transactions.csv', cleanup=False):
     copy_file('create_tables.sql')
     psql('create_tables.sql')
-    load_data('offers', project_path('data/offers.csv'))
+    load_data('offers', project_path('data/offers.csv.gz'))
     load_data('transactions',
               project_path(tx_data))
     load_data('offer_performance',
-              project_path('data/trainHistory.csv'))
+              project_path('data/trainHistory.csv.gz'))
 
     if cleanup:
         run('rm %s' % project_path(tx_data))
@@ -93,13 +93,27 @@ def create_features():
     copy_file('create_features.sql')
     psql('create_features.sql')
 
+def build_database():
+    run('mkdir -p %s'% project_path('sql'))
+    put('sql/*.sql', project_path('sql/'))
+    put('build_database.sh', project_path())
+    with cd(project_path()):
+        run('bash build_database.sh')
+
 def load_data(table, fname):
-    run('''sudo -u postgres psql -d kaggle -c "COPY %s FROM '%s' CSV HEADER"''' %
+    if fname.endswith("gz"):
+        run('''sudo -u postgres psql -d kaggle -c "COPY %s FROM PROGRAM 'zcat %s' CSV HEADER"''' %
+        (table, fname))
+    else:
+        run('''sudo -u postgres psql -d kaggle -c "COPY %s FROM '%s' CSV HEADER"''' %
         (table, fname))
 
 def save_data(table, fname):
-    run('''sudo -u postgres psql -d kaggle -c "COPY %s TO '%s' CSV HEADER"''' %
+    run('''psql -d kaggle -c "\copy (SELECT * FROM %s) TO '%s' CSV HEADER"''' %
         (table, fname))
+
+def drop_mv(view):
+    run('''psql -d kaggle -c "DROP MATERIALIZED VIEW %s"''' % view)
 
 def deploy():
     setup_env()
@@ -115,12 +129,10 @@ def deploy_full():
     setup_env()
     install_packages()
     download_data()
-    extract_data(transactions=True)
     setup_db()
     create_tables('data/transactions.csv', cleanup=True)
-    create_views()
-    create_features()
-    save_data('f_customer_category', project_path('data/features.csv'))
+    build_database()
+    save_data('features', project_path('data/features.csv'))
 
 
 
